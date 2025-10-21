@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Simple CSS variables */
+:root {
+  --background: #ffffff;
+  --foreground: #000000;
+  --primary: #030213;
+  --border: rgba(0, 0, 0, 0.1);
+}
+
+/* Basic body styles */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
