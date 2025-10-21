@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { SearchBar } from "./components/SearchBar";
 import { CarCard } from "./components/CarCard";
@@ -7,14 +8,14 @@ import { BookingDialog } from "./components/BookingDialog";
 import { Car as CarIcon, Menu, X, Star, Users, MapPin } from "lucide-react";
 import { Button } from "./components/ui/button";
 import "./index.css";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
+// Import your pages
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import VehicleManagement from "./pages/VehicleManagement";
 import NotFound from "./pages/NotFound";
 
-// Remove the : Car[] type annotation
+// Your existing car data
 const mockCars = [
   {
     id: "1",
@@ -126,8 +127,8 @@ const mockCars = [
   },
 ];
 
-export default function App() {
-  // Remove the : Car | null type annotation
+// Your car rental app as a separate component
+function CarRentalApp() {
   const [selectedCar, setSelectedCar] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 500]);
@@ -174,7 +175,6 @@ export default function App() {
     });
   }, [priceRange, selectedTypes, transmission]);
 
-  // Remove the : Car type annotation
   const handleBookCar = (car) => {
     setSelectedCar(car);
     setDialogOpen(true);
@@ -252,7 +252,7 @@ export default function App() {
         id="home"
         className="relative bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white overflow-hidden"
       >
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00em0tMjQgMGMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLjc5LTQtNHptMCAyNGMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLjc5LTQtNHptMjQgMGMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLjc5LTQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-10"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00em0tMjQgMGMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLjc5LTQtNHptMCAyNGMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLjc5LTQtNHptMjQgMGMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLzc5LTQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-10"></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -456,5 +456,25 @@ export default function App() {
         onOpenChange={setDialogOpen}
       />
     </div>
+  );
+}
+
+// Main App component with routing
+export default function App() {
+  return (
+    <Router>
+      <Routes>
+        {/* Public route - your main car rental page */}
+        <Route path="/" element={<CarRentalApp />} />
+        
+        {/* Admin routes */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/vehicles" element={<VehicleManagement />} />
+        
+        {/* 404 route */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Router>
   );
 }
