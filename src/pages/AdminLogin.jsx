@@ -1,27 +1,67 @@
 // src/pages/AdminLogin.jsx
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function AdminLogin() {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleSubmit = (e) => {
+  // Get the intended destination or default to dashboard
+  const from = location.state?.from?.pathname || '/admin/dashboard';
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login attempt:', formData);
+    setLoading(true);
+    setError('');
     
-    // Basic validation - in real app, you'd check against your backend
-    if (formData.email && formData.password) {
-      // Store a simple auth flag (in real app, you'd use JWT tokens)
-      localStorage.setItem('isAdminLoggedIn', 'true');
+    console.log('🔸 1. Form submitted with data:', formData);
+
+    try {
+      console.log('🔸 2. Making API request to:', 'https://car-rental-backend-1-m022.onrender.com/api/admin/login');
       
-      // Navigate to admin dashboard
-      navigate('/admin/dashboard');
-    } else {
-      alert('Please enter both email and password');
+      const response = await fetch('https://car-rental-backend-1-m022.onrender.com/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      console.log('🔸 3. Response status:', response.status);
+
+      const data = await response.json();
+      console.log('🔸 4. Response data:', data);
+
+      if (response.ok) {
+        console.log('🔸 5. Login successful, storing token and admin data');
+        
+        // Use the auth context login function
+        login(data.token, data.admin);
+        
+        console.log('🔸 6. Auth context updated, navigating to:', from);
+        
+        // Clear browser history and redirect to intended destination
+        window.history.replaceState(null, '', from);
+        navigate(from, { replace: true });
+      } else {
+        console.log('🔸 5. Login failed:', data.message);
+        setError(data.message || 'Login failed');
+      }
+    } catch (err) {
+      console.log('🔸 3. Network error:', err);
+      setError('Network error. Please try again.');
+    } finally {
+      console.log('🔸 7. Setting loading to false');
+      setLoading(false);
     }
   };
 
@@ -34,6 +74,12 @@ export default function AdminLogin() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-800 text-sm">{error}</p>
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Email
@@ -64,18 +110,12 @@ export default function AdminLogin() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 font-semibold"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
           >
-            Sign in
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
-
-        {/* Demo credentials hint */}
-        <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-sm text-yellow-800 text-center">
-            💡 Demo: Enter any email and password to login
-          </p>
-        </div>
       </div>
     </div>
   );

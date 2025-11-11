@@ -7,6 +7,12 @@ const carTypes = [
   { id: "compact", label: "Compact" },
   { id: "electric", label: "Electric" },
   { id: "convertible", label: "Convertible" },
+  { id: "bakkie", label: "Bakkie" },
+  { id: "minibus", label: "Minibus" },
+  { id: "hatchback", label: "Hatchback" },
+  { id: "coupe", label: "Coupe" },
+  { id: "van", label: "Van" },
+  { id: "luxury", label: "Luxury" },
 ];
 
 const transmissionTypes = [
@@ -38,18 +44,18 @@ export function FilterSidebar({
       {/* Price Range */}
       <div className="mb-8">
         <label className="block text-sm font-medium text-gray-700 mb-4">
-          Price Range: ${priceRange[0]} - ${priceRange[1]}
+          Price Range: R{priceRange[0]} - R{priceRange[1]}
         </label>
         <Slider
           value={priceRange}
           onValueChange={setPriceRange}
-          max={500}
-          step={10}
+          max={10000}
+          step={100}
           className="mb-2"
         />
         <div className="flex justify-between text-sm text-gray-500">
-          <span>$0</span>
-          <span>$500</span>
+          <span>R0</span>
+          <span>R10,000</span>
         </div>
       </div>
 
@@ -58,7 +64,7 @@ export function FilterSidebar({
         <label className="block text-sm font-medium text-gray-700 mb-4">
           Car Type
         </label>
-        <div className="space-y-3">
+        <div className="space-y-3 max-h-60 overflow-y-auto">
           {carTypes.map((type) => (
             <label key={type.id} className="flex items-center">
               <input

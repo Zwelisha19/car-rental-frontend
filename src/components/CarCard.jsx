@@ -1,4 +1,5 @@
-import { Star, Users, Cog, Fuel, Zap } from "lucide-react";
+
+import { Users, Cog, Fuel, Zap } from "lucide-react";
 import { Button } from "./ui/button";
 
 export function CarCard({ car, onBook }) {
@@ -10,18 +11,9 @@ export function CarCard({ car, onBook }) {
           alt={car.name}
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
-        {car.featured && (
-          <div className="absolute top-4 left-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-            Featured
-          </div>
-        )}
-        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1">
-          <div className="flex items-center gap-1">
-            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-            <span className="text-sm font-semibold">{car.rating}</span>
-            <span className="text-xs text-gray-500">({car.reviews})</span>
-          </div>
-        </div>
+        {/* REMOVED Featured badge */}
+        
+        {/* REMOVED Rating section */}
       </div>
 
       <div className="p-6">
@@ -33,7 +25,7 @@ export function CarCard({ car, onBook }) {
             <p className="text-gray-500 text-sm">{car.type}</p>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold text-gray-900">${car.price}</div>
+            <div className="text-2xl font-bold text-gray-900">R{car.price}</div>
             <div className="text-gray-500 text-sm">per day</div>
           </div>
         </div>
@@ -55,8 +47,8 @@ export function CarCard({ car, onBook }) {
             )}
             {car.fuel}
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <div className="w-4 h-4 text-center">🛄</div>
+         <div className="flex items-center gap-2 text-sm text-gray-600">
+             <div className="w-4 h-4 text-center">🛄</div>
             {car.luggage} Luggage
           </div>
         </div>

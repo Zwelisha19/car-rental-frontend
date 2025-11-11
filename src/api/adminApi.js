@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/admin";
+const API_URL = "https://car-rental-backend-1-m022.onrender.com/api/admin";
 
 export const adminLogin = async (email, password) => {
   const res = await axios.post(`${API_URL}/login`, { email, password });
