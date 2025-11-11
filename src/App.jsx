@@ -1,184 +1,231 @@
-import { useState, useMemo } from "react";
+
+
+import { useState, useMemo, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { SearchBar } from "./components/SearchBar";
 import { CarCard } from "./components/CarCard";
 import { FilterSidebar } from "./components/FilterSidebar";
-import { BookingDialog } from "./components/BookingDialog";
+import BookingDialog from './components/BookingDialog';
 import { Car as CarIcon, Menu, X, Star, Users, MapPin } from "lucide-react";
 import { Button } from "./components/ui/button";
 import "./index.css";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
+// Import Auth Context
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+// Import your pages
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import VehicleManagement from "./pages/VehicleManagement";
 import NotFound from "./pages/NotFound";
+import AddVehicle from "./pages/AddVehicle";
+import EditVehicle from "./pages/EditVehicle";
+import HowItWorks from "./pages/HowItWorks";
+import Contact from "./pages/Contact";
+import AboutUs from "./pages/AboutUs";
+import BookingsManagement from "./pages/BookingsManagement";
 
-// Remove the : Car[] type annotation
-const mockCars = [
-  {
-    id: "1",
-    name: "BMW 5 Series",
-    type: "Luxury Sedan",
-    image: "https://images.unsplash.com/photo-1698816688678-a3f838fd4fe0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBzZWRhbiUyMGNhcnxlbnwxfHx8fDE3NjA1NzU4ODh8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    price: 89,
-    passengers: 5,
-    transmission: "Automatic",
-    fuel: "Gasoline",
-    luggage: 3,
-    rating: 4.8,
-    reviews: 124,
-    featured: true,
-  },
-  {
-    id: "2",
-    name: "Range Rover Sport",
-    type: "Luxury SUV",
-    image: "https://images.unsplash.com/photo-1642345810417-eecf7dda339b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aGl0ZSUyMFNVViUyMGNhcnxlbnwxfHx8fDE3NjA1OTcxMjB8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    price: 145,
-    passengers: 7,
-    transmission: "Automatic",
-    fuel: "Diesel",
-    luggage: 5,
-    rating: 4.9,
-    reviews: 98,
-    featured: true,
-  },
-  {
-    id: "3",
-    name: "Porsche 911",
-    type: "Sports Car",
-    image: "https://images.unsplash.com/photo-1653047257372-5f2a51257688?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzcG9ydHMlMjBjYXIlMjByZWR8ZW58MXx8fHwxNzYwNTY0OTE4fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    price: 299,
-    passengers: 2,
-    transmission: "Manual",
-    fuel: "Gasoline",
-    luggage: 1,
-    rating: 5.0,
-    reviews: 67,
-    featured: true,
-  },
-  {
-    id: "4",
-    name: "Honda Civic",
-    type: "Compact Sedan",
-    image: "https://images.unsplash.com/photo-1743809809295-cfd2a2e3d40f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb21wYWN0JTIwY2FyJTIwYmx1ZXxlbnwxfHx8fDE3NjA1OTcxMjF8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    price: 45,
-    passengers: 5,
-    transmission: "Automatic",
-    fuel: "Gasoline",
-    luggage: 2,
-    rating: 4.6,
-    reviews: 203,
-  },
-  {
-    id: "5",
-    name: "Tesla Model 3",
-    type: "Electric Sedan",
-    image: "https://images.unsplash.com/photo-1692806224359-9cf5ae2df1aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbGVjdHJpYyUyMGNhciUyMHdoaXRlfGVufDF8fHx8MTc2MDU3Mzc1MHww&ixlib=rb-4.1.0&q=80&w=1080",
-    price: 95,
-    passengers: 5,
-    transmission: "Automatic",
-    fuel: "Electric",
-    luggage: 2,
-    rating: 4.7,
-    reviews: 156,
-    featured: true,
-  },
-  {
-    id: "6",
-    name: "BMW Z4 Roadster",
-    type: "Convertible",
-    image: "https://images.unsplash.com/photo-1656011475851-23f591606c0c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb252ZXJ0aWJsZSUyMGNhcnxlbnwxfHx8fDE3NjA1OTcxMjJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    price: 179,
-    passengers: 2,
-    transmission: "Automatic",
-    fuel: "Gasoline",
-    luggage: 1,
-    rating: 4.8,
-    reviews: 89,
-  },
-  {
-    id: "7",
-    name: "Cadillac Escalade",
-    type: "Luxury SUV",
-    image: "https://images.unsplash.com/photo-1739950075618-f9ae2f90b0c0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxibGFjayUyMGx1eHVyeSUyMFNVVnxlbnwxfHx8fDE3NjA1OTcxMjN8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    price: 189,
-    passengers: 7,
-    transmission: "Automatic",
-    fuel: "Gasoline",
-    luggage: 6,
-    rating: 4.7,
-    reviews: 72,
-  },
-  {
-    id: "8",
-    name: "Mercedes-Benz E-Class",
-    type: "Luxury Sedan",
-    image: "https://images.unsplash.com/photo-1757782630151-8012288407e1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzaWx2ZXIlMjBzZWRhbiUyMGNhcnxlbnwxfHx8fDE3NjA1ODY1NDh8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    price: 99,
-    passengers: 5,
-    transmission: "Automatic",
-    fuel: "Hybrid",
-    luggage: 3,
-    rating: 4.9,
-    reviews: 145,
-  },
-];
-
-export default function App() {
-  // Remove the : Car | null type annotation
+// Your car rental app as a separate component
+function CarRentalApp() {
   const [selectedCar, setSelectedCar] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [priceRange, setPriceRange] = useState([0, 500]);
+  const [priceRange, setPriceRange] = useState([0, 10000]);
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [transmission, setTransmission] = useState("all");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [cars, setCars] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Fetch vehicles from backend
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        const response = await fetch('https://car-rental-backend-1-m022.onrender.com/api/vehicles');
+        
+        if (response.ok) {
+          const data = await response.json();
+          setCars(data);
+        } else {
+          setError('Failed to load vehicles');
+        }
+      } catch (err) {
+        setError('Network error - please try again later');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVehicles();
+  }, []);
 
   const filteredCars = useMemo(() => {
-    return mockCars.filter((car) => {
-      if (car.price < priceRange[0] || car.price > priceRange[1]) {
+  return cars.filter((car) => {
+    if (car.price < priceRange[0] || car.price > priceRange[1]) {
+      return false;
+    }
+
+    if (selectedTypes.length > 0) {
+      const carTypeKeywords = car.type.toLowerCase();
+      const matchesType = selectedTypes.some((type) => {
+        if (type === "sedan") return carTypeKeywords.includes("sedan");
+        if (type === "suv") return carTypeKeywords.includes("suv");
+        if (type === "sports") return carTypeKeywords.includes("sports");
+        if (type === "compact") return carTypeKeywords.includes("compact");
+        if (type === "electric") return car.fuel === "Electric";
+        if (type === "convertible") return carTypeKeywords.includes("convertible");
+        if (type === "bakkie") return carTypeKeywords.includes("bakkie");
+        if (type === "minibus") return carTypeKeywords.includes("minibus");
+        if (type === "hatchback") return carTypeKeywords.includes("hatchback");
+        if (type === "coupe") return carTypeKeywords.includes("coupe");
+        if (type === "van") return carTypeKeywords.includes("van");
+        if (type === "luxury") return carTypeKeywords.includes("luxury");
+        return false;
+      });
+      if (!matchesType) return false;
+    }
+
+    if (transmission !== "all") {
+      if (
+        transmission === "automatic" &&
+        car.transmission.toLowerCase() !== "automatic"
+      ) {
         return false;
       }
-
-      if (selectedTypes.length > 0) {
-        const carTypeKeywords = car.type.toLowerCase();
-        const matchesType = selectedTypes.some((type) => {
-          if (type === "sedan") return carTypeKeywords.includes("sedan");
-          if (type === "suv") return carTypeKeywords.includes("suv");
-          if (type === "sports") return carTypeKeywords.includes("sports");
-          if (type === "compact") return carTypeKeywords.includes("compact");
-          if (type === "electric") return car.fuel === "Electric";
-          if (type === "convertible") return carTypeKeywords.includes("convertible");
-          return false;
-        });
-        if (!matchesType) return false;
+      if (
+        transmission === "manual" &&
+        car.transmission.toLowerCase() !== "manual"
+      ) {
+        return false;
       }
+    }
 
-      if (transmission !== "all") {
-        if (
-          transmission === "automatic" &&
-          car.transmission.toLowerCase() !== "automatic"
-        ) {
-          return false;
-        }
-        if (
-          transmission === "manual" &&
-          car.transmission.toLowerCase() !== "manual"
-        ) {
-          return false;
-        }
-      }
+    return true;
+  });
+}, [cars, priceRange, selectedTypes, transmission]);
 
-      return true;
-    });
-  }, [priceRange, selectedTypes, transmission]);
-
-  // Remove the : Car type annotation
   const handleBookCar = (car) => {
     setSelectedCar(car);
     setDialogOpen(true);
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Keep your exact same header */}
+        <header className="bg-white shadow-sm sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-20">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
+                  <CarIcon className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <div className="text-xl text-gray-900">DriveNow</div>
+                  <div className="text-xs text-gray-500">Premium Rentals</div>
+                </div>
+              </div>
+              
+              <nav className="hidden lg:flex items-center gap-8">
+                <a href="#home" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  Home
+                </a>
+                <a href="#cars" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  Browse Cars
+                </a>
+                <a href="/how-it-works" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  How It Works
+                </a>
+                <a href="/contact" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  Contact
+                </a>
+              </nav>
+
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="lg:hidden p-2 text-gray-600 hover:text-blue-600"
+              >
+                {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Loading section */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading vehicles...</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Keep your exact same header */}
+        <header className="bg-white shadow-sm sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-20">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
+                  <CarIcon className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <div className="text-xl text-gray-900">DriveNow</div>
+                  <div className="text-xs text-gray-500">Premium Rentals</div>
+                </div>
+              </div>
+              
+              <nav className="hidden lg:flex items-center gap-8">
+                <a href="#home" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  Home
+                </a>
+                <a href="#cars" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  Browse Cars
+                </a>
+                <a href="/how-it-works" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  How It Works
+                </a>
+                <a href="/contact" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  Contact
+                </a>
+              </nav>
+
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="lg:hidden p-2 text-gray-600 hover:text-blue-600"
+              >
+                {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Error section */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="bg-white rounded-2xl p-16 text-center shadow-sm">
+            <CarIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl text-gray-900 mb-2">Unable to load vehicles</h3>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <Button 
+              onClick={() => window.location.reload()}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+            >
+              Try Again
+            </Button>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -203,15 +250,12 @@ export default function App() {
               <a href="#cars" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Browse Cars
               </a>
-              <a href="#how" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <a href="/how-it-works" className="text-gray-600 hover:text-blue-600 transition-colors">
                 How It Works
               </a>
-              <a href="#contact" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <a href="/contact" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Contact
               </a>
-              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
-                Sign In
-              </Button>
             </nav>
 
             <button
@@ -233,26 +277,23 @@ export default function App() {
               <a href="#cars" className="block text-gray-600 hover:text-blue-600">
                 Browse Cars
               </a>
-              <a href="#how" className="block text-gray-600 hover:text-blue-600">
+              <a href="/how-it-works" className="block text-gray-600 hover:text-blue-600">
                 How It Works
               </a>
-              <a href="#contact" className="block text-gray-600 hover:text-blue-600">
+              <a href="/contact" className="block text-gray-600 hover:text-blue-600">
                 Contact
               </a>
-              <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600">
-                Sign In
-              </Button>
             </nav>
           </div>
         )}
       </header>
 
-      {/* Hero Section */}
+      {/* Hero Section - REMOVED SearchBar */}
       <section
         id="home"
         className="relative bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white overflow-hidden"
       >
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00em0tMjQgMGMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLjc5LTQtNHptMCAyNGMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLjc5LTQtNHptMjQgMGMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLjc5LTQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-10"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00em0tMjQgMGMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLjc5LTQtNHomMCAyNGMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLjc5LTQtNHptMjQgMGMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLjc5LTQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-10"></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -273,10 +314,19 @@ export default function App() {
                 Choose from our extensive fleet of luxury and economy vehicles. Book online in minutes and hit the road.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 shadow-xl">
+                <Button 
+                  size="lg" 
+                  className="bg-white text-blue-600 hover:bg-blue-50 shadow-xl"
+                  onClick={() => document.getElementById('cars').scrollIntoView({ behavior: 'smooth' })}
+                >
                   Browse Fleet
                 </Button>
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-white text-white hover:bg-white/10"
+                  onClick={() => window.location.href = '/how-it-works'}
+                >
                   Learn More
                 </Button>
               </div>
@@ -318,14 +368,7 @@ export default function App() {
             </motion.div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-12"
-          >
-            <SearchBar />
-          </motion.div>
+          {/* REMOVED SearchBar component */}
         </div>
       </section>
 
@@ -391,16 +434,20 @@ export default function App() {
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
             Book your perfect vehicle today and enjoy a seamless rental experience
           </p>
-          <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
-            Start Booking Now
+          <Button 
+            size="lg" 
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+            onClick={() => document.getElementById('cars').scrollIntoView({ behavior: 'smooth' })}
+          >
+            Browse Available Cars
           </Button>
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Footer - UPDATED: Removed Support section */}
       <footer className="bg-gray-900 text-gray-400 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
@@ -412,25 +459,16 @@ export default function App() {
                 </div>
               </div>
               <p className="text-sm leading-relaxed">
-                Your trusted partner for premium car rentals across the country.
+                Your trusted partner for premium car rentals across South Africa.
               </p>
             </div>
             <div>
               <h4 className="text-white mb-4">Company</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
+                <li><a href="/how-it-works" className="hover:text-white transition-colors">How It Works</a></li>
+                <li><a href="/about" className="hover:text-white transition-colors">About Us</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Press</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white mb-4">Support</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Safety</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Privacy</a></li>
               </ul>
             </div>
             <div>
@@ -439,7 +477,7 @@ export default function App() {
                 <li>1-800-DRIVE-NOW</li>
                 <li>support@drivenow.com</li>
                 <li>123 Main Street</li>
-                <li>New York, NY 10001</li>
+                <li>Johannesburg, South Africa</li>
               </ul>
             </div>
           </div>
@@ -456,5 +494,71 @@ export default function App() {
         onOpenChange={setDialogOpen}
       />
     </div>
+  );
+}
+
+// Main App component with routing
+export default function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public route - your main car rental page */}
+          <Route path="/" element={<CarRentalApp />} />
+          
+          {/* Public pages */}
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/about" element={<AboutUs />} />
+          
+          {/* Admin routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route 
+            path="/admin/dashboard" 
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/vehicles" 
+            element={
+              <ProtectedRoute>
+                <VehicleManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/vehicles/add" 
+            element={
+              <ProtectedRoute>
+                <AddVehicle />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/vehicles/edit/:id" 
+            element={
+              <ProtectedRoute>
+                <EditVehicle />
+              </ProtectedRoute>
+            } 
+          />
+
+           <Route 
+            path="/admin/bookings" 
+            element={
+              <ProtectedRoute>
+                <BookingsManagement />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* 404 route */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }

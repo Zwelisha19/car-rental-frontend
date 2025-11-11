@@ -1,104 +1,34 @@
-// import { useState } from "react";
-// import { loginUser } from "../api/userApi";
-// import { adminLogin } from "../api/adminApi";
-// import { useNavigate } from "react-router-dom";
-
-// export default function Login() {
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [error, setError] = useState("");
-//   const navigate = useNavigate();
-
-//   const ADMIN_EMAIL = "zwelishat@gmail.com"; // Admin email
-
-//   const handleLogin = async (e) => {
-//     e.preventDefault();
-//     setError("");
-
-//     try {
-//       let data;
-
-//       if (email === ADMIN_EMAIL) {
-//         // Admin login
-//         data = await adminLogin(email, password);
-//         localStorage.setItem("token", data.token);
-//         localStorage.setItem("role", "admin");
-//         navigate("/admin/dashboard"); // redirect admin
-//       } else {
-//         // Regular user login
-//         data = await loginUser({ email, password });
-//         localStorage.setItem("token", data.token);
-//         localStorage.setItem("role", "user");
-//         navigate("/"); // redirect user to homepage with cars
-//       }
-//     } catch (err) {
-//       setError(err.response?.data?.message || "Login failed");
-//     }
-//   };
-
-//   return (
-//     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 px-4">
-//       <div className="bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl p-10 w-full max-w-md text-white">
-//         <h2 className="text-4xl font-bold mb-6 text-center">Login</h2>
-//         <form className="flex flex-col gap-5" onSubmit={handleLogin}>
-//           <input
-//             type="email"
-//             placeholder="Email"
-//             value={email}
-//             onChange={(e) => setEmail(e.target.value)}
-//             className="p-3 rounded-lg bg-white/20 border border-white/30 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-//             required
-//           />
-//           <input
-//             type="password"
-//             placeholder="Password"
-//             value={password}
-//             onChange={(e) => setPassword(e.target.value)}
-//             className="p-3 rounded-lg bg-white/20 border border-white/30 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-//             required
-//           />
-//           {error && <p className="text-red-400 text-sm">{error}</p>}
-//           <button
-//             type="submit"
-//             className="py-3 rounded-full bg-yellow-400 font-bold text-gray-900 hover:scale-105 transform transition duration-300 shadow-lg"
-//           >
-//             Login
-//           </button>
-//         </form>
-//         <p className="mt-4 text-center text-gray-300">
-//           Don’t have an account?{" "}
-//           <a href="/register" className="text-yellow-400 hover:underline">
-//             Register
-//           </a>
-//         </p>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-// src/components/AdminLogin.jsx
+// src/pages/AdminLogin.jsx
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-export function AdminLogin() {
+export default function AdminLogin() {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the intended destination or default to dashboard
+  const from = location.state?.from?.pathname || '/admin/dashboard';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
+    console.log('🔸 1. Form submitted with data:', formData);
 
     try {
-      // TODO: Replace with your actual backend API call
-      const response = await fetch('/api/admin/login', {
+      console.log('🔸 2. Making API request to:', 'https://car-rental-backend-1-m022.onrender.com/api/admin/login');
+      
+      const response = await fetch('https://car-rental-backend-1-m022.onrender.com/api/admin/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -106,17 +36,31 @@ export function AdminLogin() {
         body: JSON.stringify(formData),
       });
 
+      console.log('🔸 3. Response status:', response.status);
+
+      const data = await response.json();
+      console.log('🔸 4. Response data:', data);
+
       if (response.ok) {
-        const data = await response.json();
-        // Store token (you might use httpOnly cookies instead)
-        localStorage.setItem('adminToken', data.token);
-        navigate('/admin/dashboard');
+        console.log('🔸 5. Login successful, storing token and admin data');
+        
+        // Use the auth context login function
+        login(data.token, data.admin);
+        
+        console.log('🔸 6. Auth context updated, navigating to:', from);
+        
+        // Clear browser history and redirect to intended destination
+        window.history.replaceState(null, '', from);
+        navigate(from, { replace: true });
       } else {
-        setError('Invalid credentials');
+        console.log('🔸 5. Login failed:', data.message);
+        setError(data.message || 'Login failed');
       }
     } catch (err) {
-      setError('Login failed. Please try again.');
+      console.log('🔸 3. Network error:', err);
+      setError('Network error. Please try again.');
     } finally {
+      console.log('🔸 7. Setting loading to false');
       setLoading(false);
     }
   };
