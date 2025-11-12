@@ -44,12 +44,18 @@ A full-stack car rental application built with React.js frontend and Node.js bac
 - dotenv
 
 
-## 🚀 Quick Start
+## 🌐 Live Deployment
 
-### Prerequisites
-- Node.js (v14 or higher)
-- MongoDB (local or Atlas)
-- npm or yarn
+### Main Application (Customer Site)
+**URL:** https://car-rental-sand-seven.vercel.app/
+
+### Admin Dashboard
+**URL:** https://car-rental-sand-seven.vercel.app/admin/login
+
+## 🔐 Admin Access Credentials
+
+**Email:** zwelishat@gmail.com  
+**Password:** P@ssword1
 
 ### Installation & Running
 
