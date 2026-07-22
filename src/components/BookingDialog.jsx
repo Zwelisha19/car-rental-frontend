@@ -50,7 +50,7 @@ export default function BookingDialog({ car, open, onOpenChange }) {
   const handlePaymentSuccess = async (details) => {
     setIsProcessing(true);
     try {
-      const response = await fetch('http://localhost:5000/api/bookings', {
+      const response = await fetch('https://car-rental-backend-1-m022.onrender.com/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
